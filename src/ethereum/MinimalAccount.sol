@@ -20,7 +20,7 @@ contract MinimalAccount is IAccount, Ownable {
     ===============================================*/
     error MinimalAccount__NotFromEntryPoint();
     error MinimalAccount__NotFromEntryPointOrOwner();
-    error MinimalAccount__CallFailed(bytes)
+    error MinimalAccount__CallFailed(bytes);
 
     /*===============================================
                      Modifier          
@@ -46,9 +46,7 @@ contract MinimalAccount is IAccount, Ownable {
         i_entryPoint = IEntryPoint(entryPoint);
     }
 
-    receive() external payable {
-        
-    }
+    receive() external payable {}
 
     /*===============================================
                 External functions          
