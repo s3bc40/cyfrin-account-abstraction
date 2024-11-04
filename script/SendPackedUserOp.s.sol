@@ -3,18 +3,30 @@ pragma solidity 0.8.24;
 
 import {Script} from "forge-std/Script.sol";
 import {PackedUserOperation} from "@account-abstraction/contracts/interfaces/PackedUserOperation.sol";
+import {HelperConfig} from "script/HelperConfig.s.sol";
+import {IEntryPoint} from "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract SendPackedUserOp is Script {
+    using MessageHashUtils for bytes32;
+
     function run() public {}
 
-    function generatedSignedUserOperation(bytes memory callData, address sender)
+    function generatedSignedUserOperation(bytes memory callData, HelperConfig.NetworkConfig memory networkConfig)
         public
+        view
         returns (PackedUserOperation memory)
     {
         // Step 1. Generate the unsigned data
-        uint256 nonce = vm.getNonce(sender);
-        PackedUserOperation memory unsignedUserOp = _generateUnsignedUserOperation(callData, sender, nonce);
-        // Step 2. Sign and return it
+        uint256 nonce = vm.getNonce(networkConfig.account);
+        PackedUserOperation memory userOp = _generateUnsignedUserOperation(callData, networkConfig.account, nonce);
+        // Step 2. Get the userOpHash
+        bytes32 userOpHash = IEntryPoint(networkConfig.entryPoint).getUserOpHash(userOp);
+        bytes32 digest = userOpHash.toEthSignedMessageHash();
+        // Step 3. Sign and return it
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(networkConfig.account, digest);
+        userOp.signature = abi.encodePacked(r, s, v);
+        return userOp;
     }
 
     function _generateUnsignedUserOperation(bytes memory callData, address sender, uint256 nonce)
