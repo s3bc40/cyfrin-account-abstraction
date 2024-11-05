@@ -9,6 +9,8 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {SIG_VALIDATION_FAILED, SIG_VALIDATION_SUCCESS} from "lib/account-abstraction/contracts/core/Helpers.sol";
 import {IEntryPoint} from "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
+import {console} from "forge-std/console.sol";
+
 contract MinimalAccount is IAccount, Ownable {
     /*===============================================
                      State variables          

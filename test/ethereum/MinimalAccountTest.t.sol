@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {MinimalAccount} from "src/ethereum/MinimalAccount.sol";
 import {DeployMinimal} from "script/DeployMinimal.s.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
@@ -77,7 +77,7 @@ contract MinimalAccountTest is Test {
         bytes memory executeCallData =
             abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, functionData);
         PackedUserOperation memory packedUserOp =
-            sendPackedUserOp.generateSignedUserOperation(executeCallData, helperConfig.getConfig());
+            sendPackedUserOp.generateSignedUserOperation(executeCallData, helperConfig.getConfig(), address(minimalAccount));
         bytes32 userOperationHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
         // Act
         address actualSigner = ECDSA.recover(userOperationHash.toEthSignedMessageHash(), packedUserOp.signature);
@@ -97,7 +97,7 @@ contract MinimalAccountTest is Test {
         bytes memory executeCallData =
             abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, functionData);
         PackedUserOperation memory packedUserOp =
-            sendPackedUserOp.generateSignedUserOperation(executeCallData, helperConfig.getConfig());
+            sendPackedUserOp.generateSignedUserOperation(executeCallData, helperConfig.getConfig(), address(minimalAccount));
         bytes32 userOperationHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
         uint256 missingAccountFunds = 1e18;
         // Act
@@ -116,13 +116,14 @@ contract MinimalAccountTest is Test {
         bytes memory executeCallData =
             abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, functionData);
         PackedUserOperation memory packedUserOp =
-            sendPackedUserOp.generateSignedUserOperation(executeCallData, helperConfig.getConfig());
+            sendPackedUserOp.generateSignedUserOperation(executeCallData, helperConfig.getConfig(), address(minimalAccount));
         // bytes32 userOperationHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp);
         vm.deal(address(minimalAccount), 1e18);
         PackedUserOperation[] memory ops = new PackedUserOperation[](1);
         ops[0] = packedUserOp;
         // Act
         vm.prank(randomuser);
+        console.log("Calling handleOps");
         IEntryPoint(helperConfig.getConfig().entryPoint).handleOps(ops, payable(randomuser));
         // Assert
         assertEq(usdc.balanceOf(address(minimalAccount)), AMOUNT);
