@@ -150,7 +150,7 @@ contract ZkMinimalAccount is IAccount, Ownable {
         // (_transaction.signature, txHash)
         address signer = ECDSA.recover(txHash, _transaction.signature);
         bool isValidSigner = signer == owner();
-        if (!isValidSigner) {
+        if (isValidSigner) {
             magic = ACCOUNT_VALIDATION_SUCCESS_MAGIC;
         } else {
             magic = bytes4(0);
